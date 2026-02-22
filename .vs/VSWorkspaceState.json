@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\backend",
+    "\\backend\\src",
+    "\\backend\\src\\CloakAPI.Api",
+    "\\frontend",
+    "\\frontend\\cloakapi-dashboard",
+    "\\frontend\\cloakapi-dashboard\\src\\components",
+    "\\frontend\\cloakapi-dashboard\\src\\lib"
+  ],
+  "SelectedNode": "\\frontend\\cloakapi-dashboard\\src",
+  "PreviewInSolutionExplorer": false
+}
