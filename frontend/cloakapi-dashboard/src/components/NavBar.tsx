@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { clearToken } from "../lib/auth";
+import { useSession } from "../lib/useSession";
 
 function NavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
@@ -25,6 +25,8 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export function NavBar() {
   const router = useRouter();
+  const session = useSession();
+  const role = session.role;
 
   return (
     <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
@@ -36,14 +38,23 @@ export function NavBar() {
           <div className="text-xs text-zinc-500 dark:text-zinc-400">Dashboard</div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <NavLink href="/dashboard" label="Dashboard" />
-          <NavLink href="/audit" label="Audit" />
+        <div className="flex items-center gap-2">
+          <div className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300">
+            Role: <span className="font-medium">{role ?? "Unknown"}</span>
+          </div>
+          {role === "Admin" ? (
+            <>
+              <NavLink href="/admin" label="Admin" />
+              <NavLink href="/admin/audit" label="Audit" />
+            </>
+          ) : (
+            <NavLink href="/me" label="User Me" />
+          )}
           <button
             className="ml-2 rounded-md border border-zinc-200 px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
             onClick={() => {
-              clearToken();
-              router.push("/login");
+              session.logout();
+              router.replace("/login");
             }}
           >
             Logout

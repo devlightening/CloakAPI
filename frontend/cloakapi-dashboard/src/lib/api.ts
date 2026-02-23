@@ -1,5 +1,3 @@
-import { clearToken, getToken } from "./auth";
-
 export class ApiError extends Error {
   status: number;
 
@@ -11,10 +9,9 @@ export class ApiError extends Error {
 
 export async function apiFetch<T>(
   input: RequestInfo | URL,
-  init?: RequestInit
+  init?: RequestInit,
+  token?: string | null
 ): Promise<T> {
-  const token = getToken();
-
   const headers = new Headers(init?.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
@@ -25,8 +22,6 @@ export async function apiFetch<T>(
   });
 
   if (res.status === 401) {
-    clearToken();
-    if (typeof window !== "undefined") window.location.href = "/login";
     throw new ApiError(401, "Unauthorized");
   }
 

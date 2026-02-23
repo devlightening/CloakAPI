@@ -99,12 +99,20 @@ Example:
 
 ## Local run (Windows)
 
+### Ports
+
+- Dashboard: `http://localhost:3000`
+- Guardrail: `http://localhost:8080`
+- Api: `http://localhost:8081`
+- Postgres: `localhost:5433` (maps to container `5432`)
+- pgAdmin: `http://localhost:5050`
+
 ### 1) Start PostgreSQL
 
-Option A: use the repo docker compose (db only)
+Option A: use the repo docker compose (db + pgAdmin)
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d postgres
+docker compose -p cloakapi -f infra/docker-compose.yml up -d postgres pgadmin
 ```
 
 Option B: run your own Postgres and set Guardrail `ConnectionStrings:Default` accordingly.
@@ -116,7 +124,7 @@ From repo root, set the design-time factory connection string and apply migratio
 PowerShell:
 
 ```powershell
-$env:CLOAK_CONNECTIONSTRING = "Host=localhost;Port=5432;Database=cloak_audit;Username=postgres;Password=postgres"
+$env:CLOAK_CONNECTIONSTRING = "Host=localhost;Port=5433;Database=cloakapi;Username=cloak;Password=cloakpass"
 
 dotnet ef database update --project backend/src/CloakAPI.Data/CloakAPI.Data.csproj --context CloakDbContext
 ```
@@ -142,8 +150,23 @@ scripts\run-dashboard.bat
 Open:
 
 - `http://localhost:3000/login`
-- `http://localhost:3000/dashboard`
-- `http://localhost:3000/audit`
+- `http://localhost:3000/admin`
+- `http://localhost:3000/admin/audit`
+- `http://localhost:3000/me`
+
+### pgAdmin connection info
+
+- URL: `http://localhost:5050`
+- Email: `admin@example.com`
+- Password: `admin`
+
+Inside pgAdmin, add a server with:
+
+- Host: `postgres`
+- Port: `5432`
+- Database: `cloakapi`
+- Username: `cloak`
+- Password: `cloakpass`
 
 ## Docker (full stack)
 
@@ -152,6 +175,17 @@ From repo root:
 ```bash
 docker compose -p cloakapi -f infra/docker-compose.yml up -d --build
 ```
+
+You can also use the PowerShell helpers:
+
+```powershell
+scripts\up.ps1
+scripts\down.ps1
+```
+
+The compose file configures CORS for local dev (dashboard origin) via:
+
+- `Cors__AllowedOrigins=http://localhost:3000`
 
 Services:
 
@@ -182,3 +216,29 @@ curl -s http://localhost:8080/api/users/me \
 curl -s http://localhost:8080/admin/stats/summary \
   -H "Authorization: Bearer <ACCESS_TOKEN>"
 ```
+
+## Demo steps (10 minutes)
+
+1. Start the stack:
+
+```powershell
+scripts\up.ps1
+```
+
+2. Generate demo traffic (writes audit events):
+
+```powershell
+scripts\load-demo.ps1 -Count 300
+```
+
+3. Open dashboard:
+
+- `http://localhost:3000/login`
+
+4. Login as Admin:
+
+- Visit `Admin` and `Admin Audit`
+
+5. Login as Analyst:
+
+- Visit `User Me` and observe masked output vs Admin

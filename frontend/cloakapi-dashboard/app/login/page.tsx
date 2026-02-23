@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "../../src/lib/config";
-import { setToken } from "../../src/lib/auth";
+import { useSession } from "../../src/lib/useSession";
 
 type Role = "Admin" | "Analyst";
 
 export default function LoginPage() {
   const router = useRouter();
+  const session = useSession();
   const [userId, setUserId] = useState("u_admin");
   const [role, setRole] = useState<Role>("Admin");
   const [loading, setLoading] = useState(false);
@@ -34,8 +35,8 @@ export default function LoginPage() {
       }
 
       const data = (await res.json()) as { accessToken: string };
-      setToken(data.accessToken);
-      router.replace("/dashboard");
+      session.login(data.accessToken, role);
+      router.replace(role === "Admin" ? "/admin" : "/me");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

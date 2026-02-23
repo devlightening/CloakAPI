@@ -36,6 +36,23 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
+var corsOrigins = builder.Configuration["Cors:AllowedOrigins"]
+                  ?? builder.Configuration["Cors__AllowedOrigins"]
+                  ?? "http://localhost:3000";
+
+var allowedOrigins = corsOrigins
+    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevDashboard", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
@@ -50,6 +67,8 @@ builder.Services.AddDbContext<CloakDbContext>(options =>
 builder.Services.AddScoped<IAuditWriter, AuditWriter>();
 
 var app = builder.Build();
+
+app.UseCors("DevDashboard");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -75,6 +94,7 @@ adminGroup.MapGet("/audit", async (
     DateTime? fromUtc,
     DateTime? toUtc,
     string? endpoint,
+    string? endpointContains,
     string? role,
     string? decision) =>
 {
@@ -88,11 +108,14 @@ adminGroup.MapGet("/audit", async (
 
     if (fromUtc is not null) query = query.Where(e => e.TimestampUtc >= fromUtc.Value);
     if (toUtc is not null) query = query.Where(e => e.TimestampUtc <= toUtc.Value);
-    if (!string.IsNullOrWhiteSpace(endpoint)) query = query.Where(e => e.Endpoint.Contains(endpoint));
+
+    var endpointFilter = endpointContains ?? endpoint;
+    if (!string.IsNullOrWhiteSpace(endpointFilter)) query = query.Where(e => e.Endpoint.Contains(endpointFilter));
     if (!string.IsNullOrWhiteSpace(role)) query = query.Where(e => e.Role == role);
     if (!string.IsNullOrWhiteSpace(decision)) query = query.Where(e => e.Decision == decision);
 
-    var total = await query.CountAsync();
+    var totalCount = await query.CountAsync();
+    var totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)ps));
     var items = await query
         .OrderByDescending(e => e.TimestampUtc)
         .Skip((p - 1) * ps)
@@ -100,7 +123,7 @@ adminGroup.MapGet("/audit", async (
         .ToListAsync();
 
     var dtoItems = items.Select(AuditDtoMapper.ToDto).ToArray();
-    return Results.Ok(new { items = dtoItems, total, page = p, pageSize = ps });
+    return Results.Ok(new { items = dtoItems, totalCount, page = p, pageSize = ps, totalPages });
 });
 
 adminGroup.MapGet("/stats/summary", async (CloakDbContext db) =>

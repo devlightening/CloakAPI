@@ -33,6 +33,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+var corsOrigins = builder.Configuration["Cors:AllowedOrigins"]
+                  ?? builder.Configuration["Cors__AllowedOrigins"]
+                  ?? "http://localhost:3000";
+
+var allowedOrigins = corsOrigins
+    .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevDashboard", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -40,6 +57,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors("DevDashboard");
 
 app.UseAuthentication();
 app.UseAuthorization();

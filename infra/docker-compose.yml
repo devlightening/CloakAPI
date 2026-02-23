@@ -14,9 +14,11 @@ services:
     build:
       context: ../backend
       dockerfile: src/CloakAPI.Api/Dockerfile
+    init: true
     environment:
       ASPNETCORE_URLS: http://+:8081
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=cloakapi;Username=cloak;Password=cloakpass
+      Cors__AllowedOrigins: http://localhost:3000
       Jwt__Issuer: CloakAPI
       Jwt__Audience: CloakAPI.Clients
       Jwt__Key: CloakAPI__DEV__SUPER_LONG_SECRET_KEY_32CHARS_MINIMUM!!!
@@ -29,9 +31,11 @@ services:
     build:
       context: ../backend
       dockerfile: src/CloakAPI.Guardrail/Dockerfile
+    init: true
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=cloakapi;Username=cloak;Password=cloakpass
+      Cors__AllowedOrigins: http://localhost:3000
       Jwt__Issuer: CloakAPI
       Jwt__Audience: CloakAPI.Clients
       Jwt__Key: CloakAPI__DEV__SUPER_LONG_SECRET_KEY_32CHARS_MINIMUM!!!
@@ -45,6 +49,7 @@ services:
     build:
       context: ../frontend/cloakapi-dashboard
       dockerfile: Dockerfile
+    init: true
     environment:
       NEXT_PUBLIC_GUARDRAIL_BASE_URL: http://localhost:8080
       NEXT_PUBLIC_API_BASE_URL: http://localhost:8081
@@ -52,6 +57,17 @@ services:
       - guardrail
     ports:
       - "3000:3000"
+
+  pgadmin:
+      image: dpage/pgadmin4:latest
+      container_name: cloakapi-pgadmin
+      environment:
+        PGADMIN_DEFAULT_EMAIL: admin@example.com
+        PGADMIN_DEFAULT_PASSWORD: admin
+      ports:
+        - "5050:80"
+      depends_on:
+        - postgres
 
 volumes:
   cloakapi_pgdata:

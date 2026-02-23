@@ -33,13 +33,14 @@ export function AuditTable({ items }: Props) {
               <th className="px-4 py-2 font-medium">Endpoint</th>
               <th className="px-4 py-2 font-medium">Decision</th>
               <th className="px-4 py-2 font-medium">Masked</th>
+              <th className="px-4 py-2 font-medium">MaskedFields</th>
               <th className="px-4 py-2 font-medium">Status</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400" colSpan={8}>
+                <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400" colSpan={9}>
                   No results
                 </td>
               </tr>
@@ -69,6 +70,14 @@ export function AuditTable({ items }: Props) {
                   </td>
                   <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
                     {e.maskedCount}
+                  </td>
+                  <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
+                    <span
+                      className="cursor-help underline decoration-dotted"
+                      title={JSON.stringify(e.maskedFields ?? [], null, 2)}
+                    >
+                      {Array.isArray(e.maskedFields) ? e.maskedFields.length : 0}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
                     {e.statusCode}
