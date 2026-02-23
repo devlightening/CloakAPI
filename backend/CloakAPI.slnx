@@ -1,2 +1,6 @@
 <Solution>
+  <Project Path="src/CloakAPI.Api/CloakAPI.Api.csproj" />
+  <Project Path="src/CloakAPI.Data/CloakAPI.Data.csproj" />
+  <Project Path="src/CloakAPI.Guardrail/CloakAPI.Guardrail.csproj" />
+  <Project Path="src/CloakAPI.Shared/CloakAPI.Shared.csproj" />
 </Solution>

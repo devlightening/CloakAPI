@@ -5,6 +5,8 @@ services:
       POSTGRES_USER: cloak
       POSTGRES_PASSWORD: cloakpass
       POSTGRES_DB: cloakapi
+    ports:
+      - "5433:5432"
     volumes:
       - cloakapi_pgdata:/var/lib/postgresql/data
 
@@ -16,8 +18,8 @@ services:
       ASPNETCORE_URLS: http://+:8081
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=cloakapi;Username=cloak;Password=cloakpass
       Jwt__Issuer: CloakAPI
-      Jwt__Audience: CloakAPI.Dashboard
-      Jwt__Key: change-me-very-long-secret
+      Jwt__Audience: CloakAPI.Clients
+      Jwt__Key: CloakAPI__DEV__SUPER_LONG_SECRET_KEY_32CHARS_MINIMUM!!!
     depends_on:
       - postgres
     ports:
@@ -31,9 +33,8 @@ services:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=cloakapi;Username=cloak;Password=cloakpass
       Jwt__Issuer: CloakAPI
-      Jwt__Audience: CloakAPI.Dashboard
-      Jwt__Key: change-me-very-long-secret
-      Backend__BaseUrl: http://api:8081
+      Jwt__Audience: CloakAPI.Clients
+      Jwt__Key: CloakAPI__DEV__SUPER_LONG_SECRET_KEY_32CHARS_MINIMUM!!!
     depends_on:
       - postgres
       - api
@@ -46,6 +47,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NEXT_PUBLIC_GUARDRAIL_BASE_URL: http://localhost:8080
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8081
     depends_on:
       - guardrail
     ports:

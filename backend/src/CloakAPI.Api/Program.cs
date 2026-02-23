@@ -102,7 +102,7 @@ app.MapPost("/auth/token", (TokenRequest request, IConfiguration configuration) 
 
     var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-    return Results.Ok(new TokenResponse(accessToken, expiresIn: 3600));
+    return Results.Ok(new TokenResponse(accessToken, 3600));
 });
 
 app.MapGet("/secure/ping", [Authorize] (ClaimsPrincipal user) =>
